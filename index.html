@@ -227,12 +227,29 @@ Topic: ${title}
 console.log("Function response:", data);
 
 
-    const cleaned = data.content
+    const raw = data.content || "";
+
+if (!raw) {
+  showStatus("AI returned empty response.", "error");
+  isLoading = false;
+  return;
+}
+
+const cleaned = raw
   .replace(/```json/g,'')
   .replace(/```/g,'');
 
+let bundle;
 
-    const bundle = JSON.parse(cleaned);
+try {
+  bundle = JSON.parse(cleaned);
+} catch (e) {
+  console.error("Invalid JSON from AI:", cleaned);
+  showStatus("AI returned invalid JSON.", "error");
+  isLoading = false;
+  return;
+}
+
 
     await client.from("content_bundle").insert({
       update_id: updateId,
@@ -282,12 +299,29 @@ console.log("Function response:", data);
 
 
       const data = await response.json();
-      const cleaned = data.content
+      const raw = data.content || "";
+
+if (!raw) {
+  showStatus("AI returned empty response.", "error");
+  isLoading = false;
+  return;
+}
+
+const cleaned = raw
   .replace(/```json/g,'')
   .replace(/```/g,'');
 
+let bundle;
 
-      const bundle = JSON.parse(cleaned);
+try {
+  bundle = JSON.parse(cleaned);
+} catch (e) {
+  console.error("Invalid JSON from AI:", cleaned);
+  showStatus("AI returned invalid JSON.", "error");
+  isLoading = false;
+  return;
+}
+
 
       await client
         .from("content_bundle")
