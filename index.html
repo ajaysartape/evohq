@@ -274,16 +274,16 @@ Topic: ${title}
     );
 
     const data = await response.json();
-console.log("FRONTEND RECEIVED:", data);
+    console.log("FRONTEND RECEIVED:", data);
 
+    const bundle = data.bundle;
 
-    if (!data.bundle) {
+    // ✅ Only check for actual structure
+    if (!bundle || !bundle.article) {
       showStatus("AI returned invalid structure.", "error");
       isLoading = false;
       return;
     }
-
-    const bundle = data.bundle;
 
     await client.from("content_bundle").insert({
       update_id: updateId,
@@ -305,6 +305,7 @@ console.log("FRONTEND RECEIVED:", data);
 
   isLoading = false;
 }
+
 
 
   async function publishBundle(bundleId, updateId) {
