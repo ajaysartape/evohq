@@ -327,54 +327,49 @@ console.log("ARTICLE VALUE:", bundle.article);
 
   async function loadBundle(updateId) {
 
-    const { data } = await client
-      .from("content_bundle")
-      .select('*')
-      .eq("update_id", updateId)
-      .order("created_at", { ascending: false })
-      .limit(1);
+  const { data } = await client
+    .from("content_bundle")
+    .select('*')
+    .eq("update_id", updateId)
+    .order("created_at", { ascending: false })
+    .limit(1);
 
-    if (!data.length) return;
+  if (!data.length) return;
 
-    const bundle = data.bundle;
+  const row = data[0];
 
-if (!bundle) {
-  showStatus("AI returned invalid structure.", "error");
-  isLoading = false;
-  return;
+  const article = row.article_json || {};
+  const sections = article.sections || {};
+
+  const statusBadge = row.status === "published"
+    ? `<span style="color:lightgreen;">Published</span>`
+    : `<span style="color:orange;">Draft</span>`;
+
+  const actions = row.status === "published"
+    ? `<div style="color:lightgreen;">Locked</div>`
+    : `
+        <button onclick="regenerateBundle('${row.id}','${updateId}','${article.headline}')">Regenerate</button>
+        <button onclick="publishBundle('${row.id}','${updateId}')">Publish</button>
+      `;
+
+  document.getElementById("content").innerHTML = `
+    <div class="card">
+      ${actions}
+      <h2>${article.headline || "No headline"} ${statusBadge}</h2>
+      <p><strong>${article.subheading || ""}</strong></p>
+
+      <h3>What's New</h3>
+      <ul>${(sections.whats_new || []).map(i => `<li>${i}</li>`).join("")}</ul>
+
+      <h3>Key Features</h3>
+      <ul>${(sections.key_features || []).map(i => `<li>${i}</li>`).join("")}</ul>
+
+      <h3>Why It Matters</h3>
+      <p>${sections.why_it_matters || ""}</p>
+    </div>
+  `;
 }
 
-
-    const article = bundle.article_json || {};
-    const sections = article.sections || {};
-
-    const statusBadge = bundle.status === "published"
-      ? `<span style="color:lightgreen;">Published</span>`
-      : `<span style="color:orange;">Draft</span>`;
-
-    const actions = bundle.status === "published"
-      ? `<div style="color:lightgreen;">Locked</div>`
-      : `
-          <button onclick="regenerateBundle('${bundle.id}','${updateId}','${article.headline}')">Regenerate</button>
-          <button onclick="publishBundle('${bundle.id}','${updateId}')">Publish</button>
-        `;
-
-    document.getElementById("content").innerHTML = `
-      <div class="card">
-        ${actions}
-        <h2>${article.headline || "No headline"} ${statusBadge}</h2>
-
-        <h3>What's New</h3>
-        <ul>${(sections.whats_new || []).map(i => `<li>${i}</li>`).join("")}</ul>
-
-        <h3>Key Features</h3>
-        <ul>${(sections.key_features || []).map(i => `<li>${i}</li>`).join("")}</ul>
-
-        <h3>Why It Matters</h3>
-        <p>${sections.why_it_matters || ""}</p>
-      </div>
-    `;
-  }
 
   loadUpdates();
 
