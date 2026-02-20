@@ -324,6 +324,14 @@ console.log("ARTICLE VALUE:", bundle.article);
 
   const article = data.article_json;
 
+  body: JSON.stringify({
+  headline: article.headline,
+  subheading: article.subheading,
+  sections: article.sections,
+  category: "AI Updates",
+  tags: ["AI", "LLM", "Model Release"]
+})
+
   try {
 
     const response = await fetch(
