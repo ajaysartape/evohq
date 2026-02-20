@@ -274,6 +274,8 @@ Topic: ${title}
     );
 
     const data = await response.json();
+console.log("FRONTEND RECEIVED:", data);
+
 
     if (!data.bundle) {
       showStatus("AI returned invalid structure.", "error");
