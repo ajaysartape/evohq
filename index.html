@@ -193,6 +193,63 @@ Topic: ${title}
 `;
   }
 
+  async function regenerateBundle(bundleId, updateId, title) {
+
+  if (isLoading) return;
+  isLoading = true;
+
+  document.getElementById("content").innerHTML =
+    `<div class="card">Regenerating... <span class="spinner"></span></div>`;
+
+  try {
+
+    const response = await fetch(
+      "https://zfxxunulbvflgnurdedc.functions.supabase.co/generate-bundle",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "apikey": SUPABASE_KEY
+        },
+        body: JSON.stringify({ title })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.bundle) {
+      showStatus("AI returned invalid structure.", "error");
+      isLoading = false;
+      return;
+    }
+
+    const bundle = data.bundle;
+
+    await client
+      .from("content_bundle")
+      .update({
+        article_json: bundle.article,
+        video_json: bundle.video,
+        images_json: bundle.images,
+        web_story_json: bundle.web_story,
+        social_json: bundle.social
+      })
+      .eq("id", bundleId);
+
+    showStatus("Draft regenerated.");
+    loadBundle(updateId);
+
+  } catch (err) {
+    console.error(err);
+    showStatus("Error regenerating.", "error");
+  }
+
+  isLoading = false;
+}
+
+
+
   async function generateBundle(updateId, title) {
 
   if (isLoading) return;
@@ -204,52 +261,27 @@ Topic: ${title}
   try {
 
     const response = await fetch(
-  "https://zfxxunulbvflgnurdedc.functions.supabase.co/generate-bundle",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${SUPABASE_KEY}`,
-      "apikey": SUPABASE_KEY
-    },
-    body: JSON.stringify({ title })
-  }
-);
+      "https://zfxxunulbvflgnurdedc.functions.supabase.co/generate-bundle",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "apikey": SUPABASE_KEY
+        },
+        body: JSON.stringify({ title })
+      }
+    );
 
+    const data = await response.json();
 
-    if (!response.ok) {
-      showStatus("Function request failed.", "error");
+    if (!data.bundle) {
+      showStatus("AI returned invalid structure.", "error");
       isLoading = false;
       return;
     }
 
-    const data = await response.json();
-console.log("Function response:", data);
-
-
-    const raw = data.content || "";
-
-if (!raw) {
-  showStatus("AI returned empty response.", "error");
-  isLoading = false;
-  return;
-}
-
-const cleaned = raw
-  .replace(/```json/g,'')
-  .replace(/```/g,'');
-
-let bundle;
-
-try {
-  bundle = JSON.parse(cleaned);
-} catch (e) {
-  console.error("Invalid JSON from AI:", cleaned);
-  showStatus("AI returned invalid JSON.", "error");
-  isLoading = false;
-  return;
-}
-
+    const bundle = data.bundle;
 
     await client.from("content_bundle").insert({
       update_id: updateId,
@@ -272,78 +304,6 @@ try {
   isLoading = false;
 }
 
-
-  async function regenerateBundle(bundleId, updateId, title) {
-
-    if (isLoading) return;
-    isLoading = true;
-
-    document.getElementById("content").innerHTML =
-      `<div class="card">Regenerating... <span class="spinner"></span></div>`;
-
-    try {
-
-      const response = await fetch(
-  "https://zfxxunulbvflgnurdedc.functions.supabase.co/generate-bundle",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${SUPABASE_KEY}`,
-      "apikey": SUPABASE_KEY
-    },
-    body: JSON.stringify({ title })
-  }
-);
-
-
-
-      const data = await response.json();
-      const raw = data.content || "";
-
-if (!raw) {
-  showStatus("AI returned empty response.", "error");
-  isLoading = false;
-  return;
-}
-
-const cleaned = raw
-  .replace(/```json/g,'')
-  .replace(/```/g,'');
-
-let bundle;
-
-try {
-  bundle = JSON.parse(cleaned);
-} catch (e) {
-  console.error("Invalid JSON from AI:", cleaned);
-  showStatus("AI returned invalid JSON.", "error");
-  isLoading = false;
-  return;
-}
-
-
-      await client
-        .from("content_bundle")
-        .update({
-          article_json: bundle.article,
-          video_json: bundle.video,
-          images_json: bundle.images,
-          web_story_json: bundle.web_story,
-          social_json: bundle.social
-        })
-        .eq("id", bundleId);
-
-      showStatus("Draft regenerated.");
-      loadBundle(updateId);
-
-    } catch (err) {
-      console.error(err);
-      showStatus("Error regenerating.", "error");
-    }
-
-    isLoading = false;
-  }
 
   async function publishBundle(bundleId, updateId) {
 
