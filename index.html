@@ -367,7 +367,14 @@ try {
 
     if (!data.length) return;
 
-    const bundle = data[0];
+    const bundle = data.bundle;
+
+if (!bundle) {
+  showStatus("AI returned invalid structure.", "error");
+  isLoading = false;
+  return;
+}
+
 
     const article = bundle.article_json || {};
     const sections = article.sections || {};
