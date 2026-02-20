@@ -195,57 +195,60 @@ Topic: ${title}
 
   async function generateBundle(updateId, title) {
 
-    if (isLoading) return;
-    isLoading = true;
+  if (isLoading) return;
+  isLoading = true;
 
-    document.getElementById("content").innerHTML =
-      `<div class="card">Generating... <span class="spinner"></span></div>`;
+  document.getElementById("content").innerHTML =
+    `<div class="card">Generating... <span class="spinner"></span></div>`;
 
-    try {
+  try {
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch(
+      "https://zfxxunulbvflgnurdedc.functions.supabase.co/generate-bundle",
+      {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${OPENAI_KEY}`
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: "Return ONLY valid JSON. No markdown." },
-            { role: "user", content: getPrompt(title) }
-          ],
-          temperature: 0.4
-        })
-      });
+        body: JSON.stringify({ title })
+      }
+    );
 
-      const data = await response.json();
-      const cleaned = data.choices[0].message.content
-        .replace(/```json/g,'')
-        .replace(/```/g,'');
-
-      const bundle = JSON.parse(cleaned);
-
-      await client.from("content_bundle").insert({
-        update_id: updateId,
-        article_json: bundle.article,
-        video_json: bundle.video,
-        images_json: bundle.images,
-        web_story_json: bundle.web_story,
-        social_json: bundle.social,
-        status: "draft"
-      });
-
-      showStatus("Bundle generated.");
-      loadBundle(updateId);
-
-    } catch (err) {
-      console.error(err);
-      showStatus("Error generating content.", "error");
+    if (!response.ok) {
+      showStatus("Function request failed.", "error");
+      isLoading = false;
+      return;
     }
 
-    isLoading = false;
+    const data = await response.json();
+
+    const cleaned = data.choices[0].message.content
+      .replace(/```json/g,'')
+      .replace(/```/g,'');
+
+    const bundle = JSON.parse(cleaned);
+
+    await client.from("content_bundle").insert({
+      update_id: updateId,
+      article_json: bundle.article,
+      video_json: bundle.video,
+      images_json: bundle.images,
+      web_story_json: bundle.web_story,
+      social_json: bundle.social,
+      status: "draft"
+    });
+
+    showStatus("Bundle generated.");
+    loadBundle(updateId);
+
+  } catch (err) {
+    console.error(err);
+    showStatus("Error generating content.", "error");
   }
+
+  isLoading = false;
+}
+
 
   async function regenerateBundle(bundleId, updateId, title) {
 
