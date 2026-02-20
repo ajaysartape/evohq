@@ -224,6 +224,8 @@ Topic: ${title}
     }
 
     const data = await response.json();
+console.log("Function response:", data);
+
 
     const cleaned = data.choices[0].message.content
       .replace(/```json/g,'')
