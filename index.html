@@ -227,9 +227,10 @@ Topic: ${title}
 console.log("Function response:", data);
 
 
-    const cleaned = data.choices[0].message.content
-      .replace(/```json/g,'')
-      .replace(/```/g,'');
+    const cleaned = data.content
+  .replace(/```json/g,'')
+  .replace(/```/g,'');
+
 
     const bundle = JSON.parse(cleaned);
 
@@ -281,9 +282,10 @@ console.log("Function response:", data);
 
 
       const data = await response.json();
-      const cleaned = data.choices[0].message.content
-        .replace(/```json/g,'')
-        .replace(/```/g,'');
+      const cleaned = data.content
+  .replace(/```json/g,'')
+  .replace(/```/g,'');
+
 
       const bundle = JSON.parse(cleaned);
 
